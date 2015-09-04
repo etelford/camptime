@@ -2,11 +2,17 @@
 
 Camptime is a simple command (using Laravel Lumen) that allows you to quickly enter time into Basecamp Classic.
 
+
 ### Setup
 
-After cloning the repo, create a .env file and fill in your Basecamp Classic API key. 
+First, clone the repo.
+
+	git clone git@github.com:etelford/camptime.git
+
+Next, create a .env file and fill in your Basecamp Classic API key. You can use the .env.example file as a starting point.
 
 To get your API key, log into Basecamp, click the "My info" link, and scroll to the bottom of the page. Next, click the "Show your tokens" link and your 40-character key will be revealed to you.
+
 
 ### Running the command
 
@@ -14,7 +20,7 @@ Once your API key is in place, open up the Terminal and `cd` into the root direc
 
 You can then start up the Camptime engine with `artisan` using the following command:
 
-	`php artisan camptime`
+	php artisan camptime
 
 You'll see a list of all the active projects in your Basecamp account that you have access to. 
 
@@ -27,3 +33,5 @@ Press `enter` and an entry for 1 1/2 hours will be added for project ID 12345 wi
 If you're adding time for the current day, you don't need to enter a date. However, you can override this with a 4th "argument", like so:
 
 	12345|1.5|Added to-do sorting|2015-09-01
+
+After each entry, you'll be able to enter another entry. To quit the application, type `CTRL-c`.
