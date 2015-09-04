@@ -24,7 +24,7 @@ You can then start up the Camptime engine with `artisan` using the following com
 
 You'll see a list of all the active projects in your Basecamp account that you have access to. 
 
-Entering time for a project is easy. Simply not the Project's ID and type an entry into the prompt like so:
+Entering time for a project is easy. Simply put the Project's ID and type an entry into the prompt like so:
 
 	12345|1.5|Added to-do sorting
 
