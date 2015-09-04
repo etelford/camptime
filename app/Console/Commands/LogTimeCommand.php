@@ -198,7 +198,7 @@ class LogTimeCommand extends Command
         return $this->reduce(array_values(
             array_sort(
                 json_decode(json_encode($projects), TRUE), 
-                function ($value) {
+                function ($value) use($column) {
                     return $value[$column];
                 }
             )
