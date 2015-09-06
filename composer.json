@@ -1,5 +1,5 @@
 {
-    "name": "kimbia/camptime",
+    "name": "danielkperez/camptime",
     "description": "Keep track of your time with an artisan command.",
     "type": "Artisan Utility",
     "require": {
