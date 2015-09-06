@@ -1,15 +1,15 @@
 ## Camptime
 
-Camptime is a simple command (using Laravel Lumen) that allows you to quickly enter time into Basecamp Classic.
+Camptime is a simple command (using Symfony Console) that allows you to quickly enter time into Basecamp Classic.
 
 
 ### Setup
 
 First, clone the repo.
 
-	git clone git@github.com:etelford/camptime.git
+	git clone git@github.com:danielkperez/camptime.git
 
-Next, create a .env file and fill in your Basecamp Classic API key. You can use the .env.example file as a starting point.
+Next, create a .env file and fill in your Basecamp Base URL and Basecamp Classic API key. You can use the .env.example file as a starting point.
 
 To get your API key, log into Basecamp, click the "My info" link, and scroll to the bottom of the page. Next, click the "Show your tokens" link and your 40-character key will be revealed to you.
 
@@ -18,11 +18,11 @@ To get your API key, log into Basecamp, click the "My info" link, and scroll to 
 
 Once your API key is in place, open up the Terminal and `cd` into the root directory of your cloned Camptime repository.
 
-You can then start up the Camptime engine with `artisan` using the following command:
+You can then log time with the Camptime engine with `camptime logtime` using the following command:
 
-	php artisan camptime
+    camptime logtime
 
-You'll see a list of all the active projects in your Basecamp account that you have access to. 
+You'll see a list of all the active projects in your Basecamp account that you have access to.
 
 Entering time for a project is easy. Simply put the Project's ID and type an entry into the prompt like so:
 
