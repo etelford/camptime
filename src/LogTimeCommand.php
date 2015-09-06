@@ -18,14 +18,14 @@ class LogTimeCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'camptime';
+    protected $signature = 'logtime';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Start up Camptime';
+    protected $description = 'Log time to your Basecamp using Camptime';
 
     public function __construct()
     {
@@ -35,6 +35,11 @@ class LogTimeCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Configure the command for run time.
+     *
+     * @return void
+     */
     public function configure()
     {
         $this->setName('logtime')
@@ -48,11 +53,11 @@ class LogTimeCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->me();
+        $this->myBaseCamp();
         $this->projects = $this->projects();
         $this->output->table(['PROJECT ID', 'PROJECT NAME'], $this->projects);
 
-        $this->preamble($output);
+        $this->preamble();
         $this->ready();
     }
 
@@ -94,21 +99,12 @@ class LogTimeCommand extends Command
     /**
      * Show the initial welcome message
      */
-    protected function preamble(OutputInterface $output)
+    protected function preamble()
     {
-        // $this->comment("Hey there, {$this->firstName}!");
-        // $this->comment('');
+        $this->output->writeLn("Hey there, {$this->firstName}!");
         $this->output->writeLn('Time can be entered in either of the following formats:');
-        // $this->comment('Time can be entered in either of the following formats:');
-        $this->output->writeLn('');
-        // $this->comment('');
         $this->output->section('projectId|# of hours|description');
-        $this->output->writeLn('');
-        // $this->comment('');
         $this->output->writeLn('or');
-        // $this->comment('or');
-        $this->output->writeLn('');
-        // $this->comment('');
         $this->output->section('projectId|# of hours|description|date');
     }
 
@@ -166,13 +162,13 @@ class LogTimeCommand extends Command
     /**
      * Get info from Basecamp about the current user
      */
-    protected function me()
+    protected function myBaseCamp()
     {
         $request = $this->client->get('me.xml', $this->headers());
-        $me = new SimpleXMLElement($request->getBody()->getContents());
+        $myBaseCamp = new SimpleXMLElement($request->getBody()->getContents());
 
-        $this->id = json_decode(json_encode($me), true)['id'];
-        $this->firstName = json_decode(json_encode($me), true)['first-name'];
+        $this->id = json_decode(json_encode($myBaseCamp), true)['id'];
+        $this->firstName = json_decode(json_encode($myBaseCamp), true)['first-name'];
     }
 
     /**
