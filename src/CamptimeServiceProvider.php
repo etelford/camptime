@@ -12,7 +12,7 @@ class CamptimeServiceProvider extends ServiceProvider
      * @var array
      */
     protected $commands = [
-        "Kimbia\Camptime\LogTimeCommand"
+        "Camptime\LogTimeCommand"
     ];
 
     /**
