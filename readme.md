@@ -3,7 +3,7 @@
 Camptime is a simple command (using Symfony Console) that allows you to quickly enter time into Basecamp Classic.
 
 
-### Setup
+### Setup (non Laravel)
 
 First, clone the repo.
 
@@ -13,14 +13,33 @@ Next, create a .env file and fill in your Basecamp Base URL and Basecamp Classic
 
 To get your API key, log into Basecamp, click the "My info" link, and scroll to the bottom of the page. Next, click the "Show your tokens" link and your 40-character key will be revealed to you.
 
+### Setup (Laravel)
 
-### Running the command
+Install the package via composer:
+
+    composer require danielkperez/camptime
+
+Include the service provider in config/app.php:
+
+    'providers' => [
+        ...
+        Camptime\CamptimeServiceProvider::class
+        ...
+    ];
+
+### Running the command (non Laravel)
 
 Once your API key is in place, open up the Terminal and `cd` into the root directory of your cloned Camptime repository.
 
 You can then log time with the Camptime engine with `camptime logtime` using the following command:
 
     camptime logtime
+
+### Running the command (Laravel)
+
+One your API key and service provider is in place, you can log time with the Camptime engine with `logtime`
+
+    logtime
 
 You'll see a list of all the active projects in your Basecamp account that you have access to.
 
