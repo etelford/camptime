@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+
+// include composer autoloader
+require 'vendor/autoload.php';
+
+// Load .env
+$dotenv = new Dotenv;
+$dotenv->load(__DIR__);
+
+// Create Symfony Console Application
+$app = new Application("Basecamp Logger", "1.0");
+
+// Add Commands
+$app->add(new Camptime\LogTimeCommand);
+
+// Run Symfony Application
+$app->run();

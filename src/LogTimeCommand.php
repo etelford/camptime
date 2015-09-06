@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Camptime;
 
 use Carbon\Carbon;
 use SimpleXMLElement;
 use GuzzleHttp\Client;
-use Illuminate\Console\Command;
-use Illuminate\Foundation\Inspiring;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class LogTimeCommand extends Command
 {
@@ -23,15 +26,19 @@ class LogTimeCommand extends Command
      * @var string
      */
     protected $description = 'Start up Camptime';
-    
+
     public function __construct()
     {
-        $this->client = new Client(
-            ['base_uri' => 'https://kimbia.basecamphq.com/'
-        ]);
-        $this->apiKey = env('BASECAMP_API_KEY');
+        $this->client = new Client(['base_uri' => getenv('BASCAMP_BASE_URI')]);
+        $this->apiKey = getenv('BASECAMP_API_KEY');
 
         parent::__construct();
+    }
+
+    public function configure()
+    {
+        $this->setName('logtime')
+            ->setDescription('Logs time to basecamp');
     }
 
     /**
@@ -39,38 +46,14 @@ class LogTimeCommand extends Command
      *
      * @return mixed
      */
-    public function handle()
-    {
-        $this->setup();
-    }
-
-    /**
-     * Do some basic setup stuff
-     */
-    protected function setup()
+    public function execute(InputInterface $input, OutputInterface $output)
     {
         $this->me();
         $this->projects = $this->projects();
-        $this->table(['PROJECT ID', 'PROJECT NAME'], $this->projects);
+        $this->output->table(['PROJECT ID', 'PROJECT NAME'], $this->projects);
 
-        $this->preamble();
+        $this->preamble($output);
         $this->ready();
-    }
-
-    /**
-     * Show the initial welcome message
-     */
-    protected function preamble()
-    {
-        $this->comment("Hey there, {$this->firstName}!");
-        $this->comment('');
-        $this->comment('Time can be entered in either of the following formats:');
-        $this->comment('');
-        $this->error('projectId|# of hours|description');
-        $this->comment('');
-        $this->comment('or');
-        $this->comment('');
-        $this->error('projectId|# of hours|description|date');
     }
 
     /**
@@ -78,7 +61,7 @@ class LogTimeCommand extends Command
      */
     protected function ready()
     {
-        $timeEntry = $this->ask("🕐  I'm waiting patiently for a time entry...");
+        $timeEntry = $this->output->ask("🕐  I'm waiting patiently for a time entry...");
 
         $this->addTime($timeEntry);
     }
@@ -91,7 +74,7 @@ class LogTimeCommand extends Command
      *     {projectId}|{hours}|{description}|{date}
      *
      * If no date is provided, then today's date will be used.
-     * 
+     *
      * @param string $entry
      */
     protected function addTime($entry)
@@ -101,7 +84,7 @@ class LogTimeCommand extends Command
         $body = $this->entryXml($entry);
 
         $request = $this->client->post(
-            "projects/{$entry['projectId']}/time_entries.xml", 
+            "projects/{$entry['projectId']}/time_entries.xml",
             $this->headers() + $this->body($body)
         );
 
@@ -109,26 +92,46 @@ class LogTimeCommand extends Command
     }
 
     /**
+     * Show the initial welcome message
+     */
+    protected function preamble(OutputInterface $output)
+    {
+        // $this->comment("Hey there, {$this->firstName}!");
+        // $this->comment('');
+        $this->output->writeLn('Time can be entered in either of the following formats:');
+        // $this->comment('Time can be entered in either of the following formats:');
+        $this->output->writeLn('');
+        // $this->comment('');
+        $this->output->section('projectId|# of hours|description');
+        $this->output->writeLn('');
+        // $this->comment('');
+        $this->output->writeLn('or');
+        // $this->comment('or');
+        $this->output->writeLn('');
+        // $this->comment('');
+        $this->output->section('projectId|# of hours|description|date');
+    }
+
+    /**
      * Get the result of the entry and restart the engine
-     * 
+     *
      * @param  string $entry   The original time entry
      * @param  Request $reques
      */
     protected function readResult($entry, $request)
     {
-        if ($request->getStatusCode() === 201)
-        {
-            $this->info("{$entry} added!");
+        if ($request->getStatusCode() === 201) {
+            $this->output->text("{$entry} added!");
 
             return $this->ready();
         }
 
-        return $this->error("Now you've done it. Something didn't work right.💩");
+        return $this->output->error("Now you've done it. Something didn't work right.💩");
     }
 
     /**
      * Build up an XML string for the time entry
-     * 
+     *
      * @param  array $entry
      * @return string
      */
@@ -144,7 +147,7 @@ class LogTimeCommand extends Command
 
     /**
      * Take the time entry and split it up into an array.
-     * 
+     *
      * @param  string $entry The time entry
      * @return array
      */
@@ -157,7 +160,7 @@ class LogTimeCommand extends Command
             'hours' => $entry[1],
             'description' => $entry[2],
             'date' => ! empty($entry[3]) ? $entry[3] : Carbon::now()->toDateString()
-        ];        
+        ];
     }
 
     /**
@@ -168,13 +171,13 @@ class LogTimeCommand extends Command
         $request = $this->client->get('me.xml', $this->headers());
         $me = new SimpleXMLElement($request->getBody()->getContents());
 
-        $this->id = json_decode(json_encode($me), TRUE)['id'];
-        $this->firstName = json_decode(json_encode($me), TRUE)['first-name'];
+        $this->id = json_decode(json_encode($me), true)['id'];
+        $this->firstName = json_decode(json_encode($me), true)['first-name'];
     }
 
     /**
      * Get an alphabetized list of all Basecamp projects
-     * 
+     *
      * @return array
      */
     protected function projects()
@@ -189,7 +192,7 @@ class LogTimeCommand extends Command
 
     /**
      * Sort a SimpleXMLElement object by a specified column
-     * 
+     *
      * @param  SimpleXMLElement $projects
      * @return array      [description]
      */
@@ -197,8 +200,8 @@ class LogTimeCommand extends Command
     {
         return $this->reduce(array_values(
             array_sort(
-                json_decode(json_encode($projects), TRUE), 
-                function ($value) use($column) {
+                json_decode(json_encode($projects), true),
+                function ($value) use ($column) {
                     return $value[$column];
                 }
             )
@@ -207,7 +210,7 @@ class LogTimeCommand extends Command
 
     /**
      * Reduce the projects to just the project ID and name/client description
-     * 
+     *
      * @param  array $projects
      * @return array
      */
