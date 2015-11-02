@@ -23,7 +23,7 @@ class LogTimeCommand extends Command
      * @var string
      */
     protected $description = 'Start up Camptime';
-    
+
     public function __construct()
     {
         $this->client = new Client(
@@ -50,6 +50,7 @@ class LogTimeCommand extends Command
     protected function setup()
     {
         $this->me();
+        $this->projectsRecent = $this->projectsRecent();
         $this->projects = $this->projects();
         $this->table(['PROJECT ID', 'PROJECT NAME'], $this->projects);
 
@@ -91,7 +92,7 @@ class LogTimeCommand extends Command
      *     {projectId}|{hours}|{description}|{date}
      *
      * If no date is provided, then today's date will be used.
-     * 
+     *
      * @param string $entry
      */
     protected function addTime($entry)
@@ -101,7 +102,7 @@ class LogTimeCommand extends Command
         $body = $this->entryXml($entry);
 
         $request = $this->client->post(
-            "projects/{$entry['projectId']}/time_entries.xml", 
+            "projects/{$entry['projectId']}/time_entries.xml",
             $this->headers() + $this->body($body)
         );
 
@@ -110,7 +111,7 @@ class LogTimeCommand extends Command
 
     /**
      * Get the result of the entry and restart the engine
-     * 
+     *
      * @param  string $entry   The original time entry
      * @param  Request $reques
      */
@@ -128,7 +129,7 @@ class LogTimeCommand extends Command
 
     /**
      * Build up an XML string for the time entry
-     * 
+     *
      * @param  array $entry
      * @return string
      */
@@ -144,7 +145,7 @@ class LogTimeCommand extends Command
 
     /**
      * Take the time entry and split it up into an array.
-     * 
+     *
      * @param  string $entry The time entry
      * @return array
      */
@@ -157,7 +158,7 @@ class LogTimeCommand extends Command
             'hours' => $entry[1],
             'description' => $entry[2],
             'date' => ! empty($entry[3]) ? $entry[3] : Carbon::now()->toDateString()
-        ];        
+        ];
     }
 
     /**
@@ -174,7 +175,7 @@ class LogTimeCommand extends Command
 
     /**
      * Get an alphabetized list of all Basecamp projects
-     * 
+     *
      * @return array
      */
     protected function projects()
@@ -188,8 +189,29 @@ class LogTimeCommand extends Command
     }
 
     /**
+     * Get a list of IDs of Basecamp projects that current user entered time for in the past week
+     *
+     * @return array
+     */
+    protected function projectsRecent()
+    {
+        $vars = '?subject_id=' . $this->id;
+        $vars .= '&from=' . date('Ymd',strtotime('-8 days'));
+        $vars .= '&to=' . date('Ymd',strtotime('-1 day'));
+
+        $request = $this->client->get('time_entries/report.xml'.$vars, $this->headers());
+        $xml = new SimpleXMLElement($request->getBody()->getContents());
+
+        foreach ($xml as $timeEntry) {
+            $recentIds[] = (string)$timeEntry->{'project-id'};
+        }
+
+        return array_unique($recentIds);
+    }
+
+    /**
      * Sort a SimpleXMLElement object by a specified column
-     * 
+     *
      * @param  SimpleXMLElement $projects
      * @return array      [description]
      */
@@ -197,7 +219,7 @@ class LogTimeCommand extends Command
     {
         return $this->reduce(array_values(
             array_sort(
-                json_decode(json_encode($projects), TRUE), 
+                json_decode(json_encode($projects), TRUE),
                 function ($value) use($column) {
                     return $value[$column];
                 }
@@ -207,17 +229,24 @@ class LogTimeCommand extends Command
 
     /**
      * Reduce the projects to just the project ID and name/client description
-     * 
+     *
      * @param  array $projects
      * @return array
      */
     protected function reduce($projects)
     {
         foreach ($projects as $project) {
-            $reduced[] = [
-                'id' => $project['id'],
-                'name' => sprintf('%s (%s)', $project['name'], $project['company']['name'])
-            ];
+            if (in_array($project['id'],$this->projectsRecent)) {
+                $reduced[] = [
+                    'id' => sprintf('<info>%s</info>', $project['id']),
+                    'name' => sprintf('<info>%s (%s)</info>', $project['name'], $project['company']['name'])
+                ];
+            } else {
+                $reduced[] = [
+                    'id' => $project['id'],
+                    'name' => sprintf('%s (%s)', $project['name'], $project['company']['name'])
+                ];
+            }
         }
 
         return $reduced;
