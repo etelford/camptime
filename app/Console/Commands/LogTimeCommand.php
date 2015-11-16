@@ -202,6 +202,7 @@ class LogTimeCommand extends Command
         $request = $this->client->get('time_entries/report.xml'.$vars, $this->headers());
         $xml = new SimpleXMLElement($request->getBody()->getContents());
 
+        $recentIds = [];
         foreach ($xml as $timeEntry) {
             $recentIds[] = (string)$timeEntry->{'project-id'};
         }
